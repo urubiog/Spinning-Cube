@@ -132,7 +132,7 @@ def main():
         screen_buffer.fill(" ")
         
         for i in range(len(cube_points)):
-            proj = project_xyz(*cube_points[i], *cam_point)
+            proj = project_xyz(*cube_points[i], cam_point)
             proj_x = int(proj[0]) + int(WIDTH / 2)
             proj_y = int(proj[1]) + int(HEIGHT / 2)
 

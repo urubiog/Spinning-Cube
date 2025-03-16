@@ -1,18 +1,25 @@
-# Makefile
+BIN_DIR = ./bin
 
-CC = gcc              # El compilador a usar
-CFLAGS = -lm          # Las banderas de compilación
-SRC = cube.c          # Los archivos fuente
-OUT = cube            # El nombre del archivo de salida
+CFLAGS = -lm
 
-# La regla por defecto que se ejecutará al llamar `make`
-all: $(OUT)
+SRC_DIRS = . ./other_polyhedra
 
-# Cómo generar el archivo ejecutable
-$(OUT): $(SRC)
-	$(CC) $(SRC) -o $(OUT) $(CFLAGS)
+SRCS = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)/*.c))
 
-# Regla para limpiar los archivos generados
+EXECS = $(patsubst %.c, $(BIN_DIR)/%, $(notdir $(SRCS)))
+
+all: $(EXECS)
+
+$(BIN_DIR)/%: %.c
+	@mkdir -p $(BIN_DIR)
+	gcc $< -o $@ $(CFLAGS)
+
+$(BIN_DIR)/%: ./other_polyhedra/%.c
+	@mkdir -p $(BIN_DIR)
+	gcc $< -o $@ $(CFLAGS)
+
 clean:
-	rm -f $(OUT)
+	rm -rf $(BIN_DIR)
 
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
