@@ -1,12 +1,5 @@
 // pyram.c
 
-/*
-
-[ ] Revise generate_points function (there's an error)
-[ ] Fix get_char function (The arrangement of points is not symmetrical between face types)
-
-*/
-
 #include <math.h>
 #include <signal.h> // for Ctrl+C
 #include <stdio.h>
@@ -39,17 +32,16 @@ const double pyram_edge = 2.0f * pyram_width;
 const double pyram_height = 1.15f * pyram_width;
 
 int num_points = 50;
-int total_points;
+int total_points = 7600;
 
 /* Buffers for screen display */
-char face_chars[] = {'@', '#', '$', '?', '+', ':'};
+char face_chars[] = {'@', '#', '$', '?', '+'};
 double z_buff[HEIGHT][WIDTH];
 char screen_buffer[HEIGHT][WIDTH];
 Point* pyram_points;
 
 /* Function Prototypes */
 void handle_sigint(int sig);
-void calculate_globals(void);
 void reset_buffs(void);
 char get_char(int point_idx);
 double mod(double a, double b);
@@ -57,9 +49,8 @@ Point* project_xyz(Point* p, Point* center_point);
 Point* rotate_XYZ(Point* p, Point* center, double theta_x, double theta_y,
 				  double theta_z);
 void translate_xyz(Point* p, double tx, double ty, double tz);
-Point* generate_pyram_points(Point* vertices,
-							 int triang_faces[PYRAM_TRIANG_FACES][3],
-							 int base_fase[4], int num_points);
+Point* generate_points(Point* vertices, int triang_faces[PYRAM_TRIANG_FACES][3],
+					   int base_fase[4], int num_points);
 void free_matrix(Matrix* m);
 Matrix* new_matrix(int rows, int cols);
 Matrix* mat_mul(Matrix* a, Matrix* b);
@@ -70,7 +61,6 @@ Matrix* rotate_Z(double theta_z);
 /* Main Function */
 int main(void) {
 	signal(SIGINT, handle_sigint); // Register the signal handler for SIGINT
-	calculate_globals();
 	reset_buffs();
 
 	/* Define the pyram vertices */
@@ -97,8 +87,8 @@ int main(void) {
 
 	int base_face[4] = {0, 1, 2, 3};
 
-	pyram_points = generate_pyram_points(vertices, triangular_faces, base_face,
-										 num_points);
+	pyram_points =
+		generate_points(vertices, triangular_faces, base_face, num_points);
 
 	/* Initial rotation angles */
 	double A = 0, B = 0, C = 0;
@@ -173,18 +163,23 @@ void handle_sigint(int sig) {
 	exit(0);
 }
 
-void calculate_globals(void) {
-	total_points = num_points * num_points * (PYRAM_TRIANG_FACES + 1);
-}
-
 /* Returns a character based on the point index */
 char get_char(int point_idx) {
 	int num_chars = sizeof(face_chars) / sizeof(char);
 
-	int index =
-		(int) (((double) point_idx / (double) total_points) * num_chars);
+	if (point_idx < 1275)
+	{
+		return face_chars[0];
+	} else if (point_idx < 1275 * 2)
+	{
+		return face_chars[1];
+	} else if (point_idx < 1275 * 3)
+	{
+		return face_chars[2];
+	} else if (point_idx < 1275 * 4)
+		return face_chars[3];
 
-	return face_chars[index];
+	return face_chars[4];
 }
 
 /* Resets the depth and screen buffers */
@@ -310,8 +305,8 @@ Point* rotate_XYZ(Point* p, Point* center, double theta_x, double theta_y,
 	double rz = p->z - center->z;
 
 	Matrix* vec = new_matrix(3, 1);
-	
-    vec->data[0] = rx;
+
+	vec->data[0] = rx;
 	vec->data[1] = ry;
 	vec->data[2] = rz;
 
@@ -324,8 +319,8 @@ Point* rotate_XYZ(Point* p, Point* center, double theta_x, double theta_y,
 	Matrix* result = mat_mul(R, vec);
 
 	Point* rotated = (Point*) malloc(sizeof(Point));
-	
-    rotated->x = result->data[0] + center->x;
+
+	rotated->x = result->data[0] + center->x;
 	rotated->y = result->data[1] + center->y;
 	rotated->z = result->data[2] + center->z;
 
@@ -348,9 +343,8 @@ void translate_xyz(Point* p, double tx, double ty, double tz) {
 }
 
 /* Generates points for the pyram faces using interpolation */
-Point* generate_pyram_points(Point* vertices,
-							 int triang_faces[PYRAM_TRIANG_FACES][3],
-							 int base_face[4], int num_points) {
+Point* generate_points(Point* vertices, int triang_faces[PYRAM_TRIANG_FACES][3],
+					   int base_face[4], int num_points) {
 	Point* points = malloc(sizeof(Point) * total_points);
 	int point_idx = 0;
 

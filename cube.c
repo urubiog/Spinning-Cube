@@ -7,7 +7,7 @@
 
 /* Definitions and Constants */
 #define WIDTH 170
-#define HEIGHT 56
+#define HEIGHT 40
 #define CUBE_FACES 6
 #define CUBE_VERTICES 8
 #define PI 3.14159
@@ -140,7 +140,7 @@ int main(void) {
 		B = mod(B + inc, 2 * PI);
 		C = mod(C + inc, 2 * PI);
 
-        usleep(40000);
+        usleep(80000);
 	}
 
 	free(cube_points);
